@@ -1,6 +1,10 @@
+import org.json.simple.JSONObject;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -9,6 +13,9 @@ import java.io.File;
  * @version 1.0
  */
 public class WeatherAppGui extends JFrame {
+
+    private JSONObject weatherDataResult;
+
     public WeatherAppGui() {
         // 初始化GUI并加一个标题
         super("Weather App");
@@ -37,13 +44,6 @@ public class WeatherAppGui extends JFrame {
         searchTextField.setFont(new Font("Dialog", Font.PLAIN, 24));
 
         add(searchTextField);
-
-        // 搜索按钮
-        JButton searchButton = new JButton(loadImage("src/assets/search.png"));
-        // 改变按钮的样式当鼠标悬停的时候
-        searchButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        searchButton.setBounds(375, 13, 47, 45);
-        add(searchButton);
 
         // 天气图片
         JLabel weatherConditionImage = new JLabel(loadImage("src/assets/cloudy.png"));
@@ -87,6 +87,62 @@ public class WeatherAppGui extends JFrame {
         wind_speedText.setBounds(310, 500, 85, 55);
         wind_speedText.setFont(new Font("Dialog", Font.PLAIN, 16));
         add(wind_speedText);
+
+        // 搜索按钮
+        JButton searchButton = new JButton(loadImage("src/assets/search.png"));
+        // 改变按钮的样式当鼠标悬停的时候
+        searchButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        searchButton.setBounds(375, 13, 47, 45);
+        // 为按钮添加事件侦听
+        searchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 获取用户输入的地址
+                String userInput = searchTextField.getText();
+                // 替换用户输入的空格
+                if (userInput.replaceAll("\\s", "").length() <= 0) {
+                    return;
+                }
+
+                // 获取天气数据
+                weatherDataResult = WeatherApp.getWeatherData(userInput);
+                // 更新图形界面
+                // 这里参数写我们自己制作的JSON文件的KEY
+                String weatherCondition = (String) weatherDataResult.get("weather_condition");
+
+                switch (weatherCondition) {
+                    case "Clear":
+                        weatherConditionImage.setIcon(loadImage("src/assets/clear.png"));
+                        break;
+                    case "Cloudy":
+                        weatherConditionImage.setIcon(loadImage("src/assets/cloudy.png"));
+                        break;
+                    case "Rain":
+                        weatherConditionImage.setIcon(loadImage("src/assets/rain.png"));
+                        break;
+                    case "Snow":
+                        weatherConditionImage.setIcon(loadImage("src/assets/snow.png"));
+                        break;
+                }
+
+                // 更新温度文本
+                double temperature = (double) weatherDataResult.get("temperature");
+                temperatureText.setText(temperature + " °C");
+
+                // 更新天气文本
+                weatherConditionDesc.setText(weatherCondition);
+
+                // 更新潮湿度
+                long humidity = (long) weatherDataResult.get("humidity");
+                humidityText.setText("<html><b>Humidity</b> " + humidity + "%</html>");
+
+                // 更新风速
+                double windspeed = (double) weatherDataResult.get("windspeed");
+                wind_speedText.setText("<html><b>Windspeed</b> " + windspeed + "km/h</html>");
+
+            }
+        });
+        add(searchButton);
     }
 
     private ImageIcon loadImage(String resourcePath) {

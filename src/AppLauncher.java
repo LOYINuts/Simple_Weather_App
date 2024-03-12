@@ -9,8 +9,9 @@ public class AppLauncher {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-//                new WeatherAppGui().setVisible(true);
-                System.out.println(WeatherApp.getLocationData("New York"));
+                new WeatherAppGui().setVisible(true);
+//                WeatherApp.getWeatherData("Tokyo");
+//                System.out.println(WeatherApp.getCurrentTime());
             }
         });
     }
